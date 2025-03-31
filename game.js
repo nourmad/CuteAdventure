@@ -109,7 +109,7 @@ const levels = [
         { x: 450, y: canvas.height - 160, width: 100, height: 20, color: '#27ae60' },
         { x: 650, y: canvas.height - 240, width: 150, height: 20, color: '#2ecc71' } // Ground end
     ],
-    // Level 3 (New)
+    // Level 3
     [
         { x: 0, y: canvas.height - 20, width: 100, height: 20, color: '#2ecc71' }, // Ground start
         { x: 200, y: canvas.height - 100, width: 80, height: 20, color: '#27ae60' },
@@ -117,7 +117,7 @@ const levels = [
         { x: 500, y: canvas.height - 260, width: 80, height: 20, color: '#27ae60' },
         { x: 650, y: canvas.height - 340, width: 150, height: 20, color: '#2ecc71' } // Highest platform
     ],
-    // Level 4 (New)
+    // Level 4
     [
         { x: 0, y: canvas.height - 20, width: 120, height: 20, color: '#2ecc71' }, // Ground start
         { x: 180, y: canvas.height - 90, width: 60, height: 20, color: '#27ae60' },
@@ -125,6 +125,53 @@ const levels = [
         { x: 420, y: canvas.height - 230, width: 60, height: 20, color: '#27ae60' },
         { x: 540, y: canvas.height - 300, width: 60, height: 20, color: '#27ae60' },
         { x: 660, y: canvas.height - 370, width: 120, height: 20, color: '#2ecc71' } // Highest platform
+    ],
+    // Level 5 - Completely redesigned staircase pattern
+    [
+        { x: 0, y: canvas.height - 20, width: 200, height: 20, color: '#2ecc71' }, // Wide ground
+        { x: 250, y: canvas.height - 100, width: 150, height: 20, color: '#27ae60' }, // First step right
+        { x: 50, y: canvas.height - 180, width: 150, height: 20, color: '#27ae60' }, // Second step left
+        { x: 300, y: canvas.height - 260, width: 150, height: 20, color: '#27ae60' }, // Third step right
+        { x: 400, y: canvas.height - 340, width: 150, height: 20, color: '#27ae60' }, // Fourth step left
+        { x: 550, y: canvas.height - 420, width: 200, height: 20, color: '#2ecc71' }  // Final platform
+    ],
+    // Level 6 - Redesigned with wider spacing
+    [
+        { x: 0, y: canvas.height - 20, width: 120, height: 20, color: '#2ecc71' }, // Ground start
+        { x: 150, y: canvas.height - 90, width: 80, height: 20, color: '#27ae60' },  // Far right
+        { x: 250, y: canvas.height - 170, width: 80, height: 20, color: '#27ae60' },  // Far left
+        { x: 350, y: canvas.height - 260, width: 80, height: 20, color: '#27ae60' }, // Far right
+        { x: 450, y: canvas.height - 360, width: 80, height: 20, color: '#27ae60' }, // Far left
+        { x: 550, y: canvas.height - 470, width: 200, height: 20, color: '#2ecc71' } // Final platform
+    ],
+    // Level 7 - Redesigned with wider spacing
+    [
+        { x: 0, y: canvas.height - 20, width: 100, height: 20, color: '#2ecc71' },   // Ground start
+        { x: 150, y: canvas.height - 120, width: 120, height: 20, color: '#27ae60' }, // Far right
+        { x: 10, y: canvas.height - 220, width: 120, height: 20, color: '#27ae60' },  // Far left
+        { x: 220, y: canvas.height - 320, width: 120, height: 20, color: '#27ae60' }, // Far right
+        { x: 320, y: canvas.height - 420, width: 120, height: 20, color: '#27ae60' },  // Far left
+        { x: 550, y: canvas.height - 520, width: 200, height: 20, color: '#2ecc71' }  // Final platform
+    ],
+    // Level 8 - Redesigned with wider spacing
+    [
+        { x: 0, y: canvas.height - 20, width: 130, height: 20, color: '#2ecc71' },  // Ground start
+        { x: 300, y: canvas.height - 100, width: 60, height: 20, color: '#27ae60' }, // Right small
+        { x: 20, y: canvas.height - 180, width: 120, height: 20, color: '#27ae60' }, // Left large
+        { x: 300, y: canvas.height - 260, width: 60, height: 20, color: '#27ae60' }, // Right small
+        { x: 400, y: canvas.height - 340, width: 120, height: 20, color: '#27ae60' }, // Left large
+        { x: 200, y: canvas.height - 420, width: 60, height: 20, color: '#27ae60' }, // Right small
+        { x: 450, y: canvas.height - 500, width: 250, height: 20, color: '#2ecc71' } // Final platform
+    ],
+    // Level 9 - Redesigned with wider spacing
+    [
+        { x: 0, y: canvas.height - 20, width: 100, height: 20, color: '#2ecc71' },   // Ground start
+        { x: 250, y: canvas.height - 100, width: 80, height: 20, color: '#27ae60' },  // Far right
+        { x: 100, y: canvas.height - 170, width: 80, height: 20, color: '#27ae60' },   // Far left
+        { x: 250, y: canvas.height - 240, width: 80, height: 20, color: '#27ae60' },  // Middle
+        { x: 350, y: canvas.height - 320, width: 80, height: 20, color: '#27ae60' },  // Far right
+        { x: 250, y: canvas.height - 400, width: 80, height: 20, color: '#27ae60' },   // Far left
+        { x: 400, y: canvas.height - 480, width: 300, height: 20, color: '#2ecc71' }  // Final platform
     ]
 ];
 
@@ -153,6 +200,36 @@ const levelCollectibles = [
         { x: 50, y: canvas.height - 70, width: 32, height: 32, collected: false, floatY: 0, opacity: 1, floatOffset: 0 },
         { x: 330, y: canvas.height - 210, width: 32, height: 32, collected: false, floatY: 0, opacity: 1, floatOffset: 1 },
         { x: 700, y: canvas.height - 420, width: 32, height: 32, collected: false, floatY: 0, opacity: 1, floatOffset: 2 }
+    ],
+    // Level 5 collectibles
+    [
+        { x: 80, y: canvas.height - 70, width: 32, height: 32, collected: false, floatY: 0, opacity: 1, floatOffset: 0 },
+        { x: 100, y: canvas.height - 230, width: 32, height: 32, collected: false, floatY: 0, opacity: 1, floatOffset: 1 },
+        { x: 450, y: canvas.height - 470, width: 32, height: 32, collected: false, floatY: 0, opacity: 1, floatOffset: 2 }
+    ],
+    // Level 6 collectibles
+    [
+        { x: 60, y: canvas.height - 70, width: 32, height: 32, collected: false, floatY: 0, opacity: 1, floatOffset: 0 },
+        { x: 70, y: canvas.height - 220, width: 32, height: 32, collected: false, floatY: 0, opacity: 1, floatOffset: 1 },
+        { x: 550, y: canvas.height - 520, width: 32, height: 32, collected: false, floatY: 0, opacity: 1, floatOffset: 2 }
+    ],
+    // Level 7 collectibles
+    [
+        { x: 40, y: canvas.height - 70, width: 32, height: 32, collected: false, floatY: 0, opacity: 1, floatOffset: 0 },
+        { x: 70, y: canvas.height - 270, width: 32, height: 32, collected: false, floatY: 0, opacity: 1, floatOffset: 1 },
+        { x: 600, y: canvas.height - 570, width: 32, height: 32, collected: false, floatY: 0, opacity: 1, floatOffset: 2 }
+    ],
+    // Level 8 collectibles
+    [
+        { x: 60, y: canvas.height - 70, width: 32, height: 32, collected: false, floatY: 0, opacity: 1, floatOffset: 0 },
+        { x: 60, y: canvas.height - 230, width: 32, height: 32, collected: false, floatY: 0, opacity: 1, floatOffset: 1 },
+        { x: 400, y: canvas.height - 550, width: 32, height: 32, collected: false, floatY: 0, opacity: 1, floatOffset: 2 }
+    ],
+    // Level 9 collectibles
+    [
+        { x: 50, y: canvas.height - 70, width: 32, height: 32, collected: false, floatY: 0, opacity: 1, floatOffset: 0 },
+        { x: 60, y: canvas.height - 450, width: 32, height: 32, collected: false, floatY: 0, opacity: 1, floatOffset: 1 },
+        { x: 550, y: canvas.height - 530, width: 32, height: 32, collected: false, floatY: 0, opacity: 1, floatOffset: 2 }
     ]
 ];
 
@@ -229,22 +306,40 @@ function update() {
     // Apply horizontal velocity
     playerX += playerVelX;
 
-    // --- Horizontal Collision with Platforms (Improved) ---
+    // Track if the player is currently passing through a platform from below
+    let isPassingThroughPlatform = false;
     for (const platform of platforms) {
-        // Check horizontal collision
         if (
-            playerY + playerHeight > platform.y + 5 && // More than 5px into platform vertically
-            playerY < platform.y + platform.height - 5 && // Not too close to the top or bottom
-            playerX + playerWidth > platform.x &&
-            playerX < platform.x + platform.width
+            playerVelY < 0 && // Moving upward
+            playerY <= platform.y + platform.height && // Player's top is at or below platform bottom
+            playerY >= platform.y - playerHeight && // Player is in the process of passing through
+            playerX + playerWidth > platform.x + 2 && // Horizontal overlap with small buffer
+            playerX < platform.x + platform.width - 2 // Horizontal overlap with small buffer
         ) {
-            // Collision detected, check which side
-            if (playerVelX > 0) { // Moving right
-                playerX = platform.x - playerWidth;
-            } else if (playerVelX < 0) { // Moving left
-                playerX = platform.x + platform.width;
+            isPassingThroughPlatform = true;
+            break;
+        }
+    }
+
+    // Skip horizontal collision if player is passing through a platform
+    if (!isPassingThroughPlatform) {
+        // --- Horizontal Collision with Platforms (Improved) ---
+        for (const platform of platforms) {
+            // Check horizontal collision
+            if (
+                playerY + playerHeight > platform.y + 5 && // More than 5px into platform vertically
+                playerY < platform.y + platform.height - 5 && // Not too close to the top or bottom
+                playerX + playerWidth > platform.x &&
+                playerX < platform.x + platform.width
+            ) {
+                // Collision detected, check which side
+                if (playerVelX > 0) { // Moving right
+                    playerX = platform.x - playerWidth;
+                } else if (playerVelX < 0) { // Moving left
+                    playerX = platform.x + platform.width;
+                }
+                playerVelX = 0;
             }
-            playerVelX = 0;
         }
     }
 
@@ -287,6 +382,67 @@ function update() {
             // No longer stopping the player - they can pass through
             // playerY = platform.y + platform.height; // Removed
             // playerVelY = 0; // Removed
+        }
+    }
+
+    // --- Fix horizontal collision for when player is standing on platform ---
+    // This goes after vertical collision is resolved to know if player is on ground
+    let standsOnPlatform = false;
+    let currentPlatform = null;
+
+    // First, determine if player is standing on a platform
+    for (const platform of platforms) {
+        if (
+            playerY + playerHeight === platform.y && // Player is exactly at platform top
+            playerX + playerWidth > platform.x &&
+            playerX < platform.x + platform.width
+        ) {
+            standsOnPlatform = true;
+            currentPlatform = platform;
+            break;
+        }
+    }
+
+    // Handle horizontal collision differently when on a platform
+    if (standsOnPlatform && currentPlatform) {
+        // Player is on a platform, check if they're going to walk off the edge
+        const edgeBuffer = 2; // Small buffer to prevent edge clipping
+        
+        // Player can walk normally on the platform
+        // But detect if they're at the edge and prevent being pushed off by collision
+        if (playerX <= currentPlatform.x - playerWidth + edgeBuffer) {
+            // At left edge, gently nudge right
+            playerX = currentPlatform.x - playerWidth + edgeBuffer;
+        } else if (playerX >= currentPlatform.x + currentPlatform.width - edgeBuffer) {
+            // At right edge, gently nudge left
+            playerX = currentPlatform.x + currentPlatform.width - edgeBuffer;
+        }
+    } else if (!isPassingThroughPlatform) { // Skip this check if passing through platform from below
+        // Player is not on a platform, use modified horizontal collision
+        // This prevents "teleporting" by using a more lenient collision check
+        for (const platform of platforms) {
+            // Only check significant horizontal collisions, not just grazing the edge
+            const collisionThreshold = playerWidth * 0.3; // 30% of player width
+            
+            if (
+                // Don't apply horizontal collision when very close to bottom of platform
+                !(playerY <= platform.y + platform.height && playerY >= platform.y + platform.height - 10) &&
+                playerY + playerHeight > platform.y + 10 && // More deeply into platform vertically
+                playerY < platform.y + platform.height - 10 && // Not near the top or bottom
+                playerX + playerWidth > platform.x &&
+                playerX < platform.x + platform.width
+            ) {
+                // Calculate penetration depth
+                const rightPenetration = playerX + playerWidth - platform.x;
+                const leftPenetration = platform.x + platform.width - playerX;
+                
+                // Only adjust if penetration is significant but not too deep
+                if (rightPenetration < collisionThreshold && playerVelX > 0) {
+                    playerX = platform.x - playerWidth;
+                } else if (leftPenetration < collisionThreshold && playerVelX < 0) {
+                    playerX = platform.x + platform.width;
+                }
+            }
         }
     }
 
