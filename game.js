@@ -6,8 +6,8 @@ const cattyElement = document.getElementById('catty');
 // Game variables (example)
 let playerX = 50;
 let playerY = canvas.height - 100; // Start near the bottom
-let playerWidth = 40;
-let playerHeight = 40;
+let playerWidth = 52;
+let playerHeight = 52;
 let playerColor = '#e74c3c'; // Red color for the player placeholder
 let playerDirection = 1; // 1 for right, -1 for left
 
@@ -248,7 +248,9 @@ function draw() {
     // Position and style the cat element instead of drawing on canvas
     cattyElement.style.left = playerX + 'px';
     cattyElement.style.top = playerY + 'px';
-    cattyElement.style.transform = playerDirection === -1 ? 'scaleX(-1)' : 'scaleX(1)';
+    cattyElement.style.transform = playerDirection === 1 ? 'scaleX(-1)' : 'scaleX(1)';
+    // Adjust the transform origin to center of cat
+    cattyElement.style.transformOrigin = 'center';
 }
 
 function gameLoop(timestamp) {
