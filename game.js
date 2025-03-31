@@ -24,11 +24,40 @@ const keys = {
     up: false
 };
 
-// --- Asset Placeholders ---
-// TODO: Load images here
+// --- Asset Loading ---
+// Load images
+let backgroundImage = new Image(); 
+let platformImage = new Image();
+let imagesLoaded = false;
+
+// Track loading of images
+let backgroundLoaded = false;
+let platformLoaded = false;
+
+backgroundImage.onload = function() {
+    backgroundLoaded = true;
+    checkAllImagesLoaded();
+};
+platformImage.onload = function() {
+    platformLoaded = true;
+    checkAllImagesLoaded();
+};
+backgroundImage.onerror = function() {
+    console.error("Error loading background image");
+};
+platformImage.onerror = function() {
+    console.error("Error loading platform image");
+};
+
+function checkAllImagesLoaded() {
+    imagesLoaded = backgroundLoaded && platformLoaded;
+    console.log("Images loaded:", imagesLoaded);
+}
+
+// Set the source after setting up event handlers
+backgroundImage.src = 'background.jpeg';
+platformImage.src = 'platform.jpeg';
 // let catImage = new Image(); catImage.src = 'assets/cat.png';
-// let platformImage = new Image(); platformImage.src = 'assets/platform.png';
-// let backgroundImage = new Image(); backgroundImage.src = 'assets/background.png';
 
 // --- Level Data ---
 let currentLevelIndex = 0;
@@ -102,15 +131,14 @@ function update() {
     // Apply horizontal velocity
     playerX += playerVelX;
 
-    // --- Horizontal Collision with Platforms (Basic) ---
-    // Prevent moving into platforms horizontally (simple side check)
+    // --- Horizontal Collision with Platforms (Improved) ---
     for (const platform of platforms) {
-        // Check potential collision
+        // Check horizontal collision
         if (
-            playerX < platform.x + platform.width &&
+            playerY + playerHeight > platform.y + 5 && // More than 5px into platform vertically
+            playerY < platform.y + platform.height - 5 && // Not too close to the top or bottom
             playerX + playerWidth > platform.x &&
-            playerY < platform.y + platform.height &&
-            playerY + playerHeight > platform.y
+            playerX < platform.x + platform.width
         ) {
             // Collision detected, check which side
             if (playerVelX > 0) { // Moving right
@@ -118,7 +146,7 @@ function update() {
             } else if (playerVelX < 0) { // Moving left
                 playerX = platform.x + platform.width;
             }
-            playerVelX = 0; // Stop horizontal movement
+            playerVelX = 0;
         }
     }
 
@@ -129,32 +157,52 @@ function update() {
     playerY += playerVelY;
     isOnGround = false; // Assume not on ground until collision check
 
-    // --- Platform Collision Detection ---
+    // --- Platform Collision Detection (Vertical) ---
     for (const platform of platforms) {
         // Check if player is falling and overlapping horizontally with the platform
         if (
             playerVelY >= 0 && // Player is falling or stationary vertically
             playerY + playerHeight >= platform.y && // Player's bottom edge is below or at platform's top
-            playerY + playerHeight <= platform.y + platform.height && // Ensure not too far below (prevents snagging bottom)
-            playerX + playerWidth > platform.x &&    // Player's right edge is past platform's left
-            playerX < platform.x + platform.width      // Player's left edge is before platform's right
+            playerY + playerHeight <= platform.y + platform.height && // Changed from height/2 to full height for better collision
+            playerX + playerWidth > platform.x + 2 &&    // Player's right edge is past platform's left (with small buffer)
+            playerX < platform.x + platform.width - 2      // Player's left edge is before platform's right (with small buffer)
         ) {
-            // Check if player was above the platform in the previous frame (prevents snagging from side)
-            // A simpler check for now: just snap to top if colliding from above
-            if (playerY + playerHeight - playerVelY <= platform.y) { // Check if bottom was above platform top before last move
+            // Make sure player was above the platform in the previous frame or falling fast enough
+            if (playerY + playerHeight - playerVelY <= platform.y + 10 || playerVelY > 10) {
                  playerY = platform.y - playerHeight; // Place player on top of the platform
                  playerVelY = 0; // Stop vertical movement
                  isOnGround = true; // Player is on the ground (or a platform)
                  break; // Stop checking after finding a platform to stand on
             }
         }
-        // Optional: Add check for hitting platform from below (bonking head)
-        // if (playerVelY < 0 && /* collision conditions for hitting bottom */) { ... }
+        
+        // Check for hitting platform from below (bonking head)
+        if (
+            playerVelY < 0 && // Moving upward
+            playerY <= platform.y + platform.height && // Player's top is above platform bottom
+            playerY >= platform.y && // Player's top is below platform top
+            playerX + playerWidth > platform.x + 2 && // Horizontal overlap with small buffer
+            playerX < platform.x + platform.width - 2 // Horizontal overlap with small buffer
+        ) {
+            playerY = platform.y + platform.height; // Place player at bottom of platform
+            playerVelY = 0; // Stop upward movement
+        }
     }
 
-    // --- Original ground collision (now part of platform logic if ground is a platform) ---
-    // Note: The ground platform in level data handles the bottom boundary
-    // if (playerY + playerHeight > canvas.height) { ... } // This logic is now handled by the ground platform
+    // --- Safety check for falling through the world ---
+    // If player falls below the canvas height, reset to ground level
+    if (playerY > canvas.height) {
+        // Find the ground platform (usually the first platform in the level)
+        const groundPlatform = platforms.find(p => p.y >= canvas.height - 30);
+        if (groundPlatform) {
+            playerY = groundPlatform.y - playerHeight;
+        } else {
+            // If no ground platform found, use canvas height as fallback
+            playerY = canvas.height - playerHeight;
+        }
+        playerVelY = 0;
+        isOnGround = true;
+    }
 
     // Basic boundary detection (left/right walls)
     if (playerX < 0) {
@@ -166,18 +214,28 @@ function update() {
 }
 
 function draw() {
-     // Clear the canvas
+    // Clear the canvas
     ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-    // TODO: Draw background image here
-    // ctx.drawImage(backgroundImage, 0, 0, canvas.width, canvas.height);
+    // Draw background image or fallback
+    if (backgroundLoaded) {
+        ctx.drawImage(backgroundImage, 0, 0, canvas.width, canvas.height);
+    } else {
+        // Fallback to a color
+        ctx.fillStyle = '#87CEEB'; // Sky blue
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+    }
 
     // Draw platforms
     for (const platform of platforms) {
-        ctx.fillStyle = platform.color || '#95a5a6'; // Use platform color or default gray
-        // TODO: Replace fillRect with drawImage for platforms
-        // ctx.drawImage(platformImage, platform.x, platform.y, platform.width, platform.height);
-        ctx.fillRect(platform.x, platform.y, platform.width, platform.height);
+        if (platformLoaded) {
+            // Draw platform with the platform image
+            ctx.drawImage(platformImage, platform.x, platform.y, platform.width, platform.height);
+        } else {
+            // Fallback to the original colored rectangles
+            ctx.fillStyle = platform.color || '#95a5a6';
+            ctx.fillRect(platform.x, platform.y, platform.width, platform.height);
+        }
     }
 
     // Draw the player
