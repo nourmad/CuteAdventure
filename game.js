@@ -338,18 +338,14 @@ function update() {
     }
 
     // --- Safety check for falling through the world ---
-    // If player falls below the canvas height, reset to ground level
+    // If player falls below the canvas height, reset to spawn position
     if (playerY > canvas.height) {
-        // Find the ground platform (usually the first platform in the level)
-        const groundPlatform = platforms.find(p => p.y >= canvas.height - 30);
-        if (groundPlatform) {
-            playerY = groundPlatform.y - playerHeight;
-        } else {
-            // If no ground platform found, use canvas height as fallback
-            playerY = canvas.height - playerHeight;
-        }
+        // Teleport player back to spawn position for the current level
+        playerX = 50;
+        playerY = canvas.height - 100;
+        playerVelX = 0;
         playerVelY = 0;
-        isOnGround = true;
+        isOnGround = false;
     }
 
     // Basic boundary detection (left/right walls)
