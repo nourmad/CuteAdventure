@@ -33,14 +33,11 @@ const keys = {
 // Load images
 let backgroundImage = new Image(); 
 let platformImage = new Image();
-// Use the preloaded GIF from the hidden div
-let cattyImage = document.getElementById('catty');
 let imagesLoaded = false;
 
 // Track loading of images
 let backgroundLoaded = false;
 let platformLoaded = false;
-let cattyLoaded = true; // We assume the GIF is loaded since it's in the HTML
 
 backgroundImage.onload = function() {
     backgroundLoaded = true;
@@ -58,14 +55,13 @@ platformImage.onerror = function() {
 };
 
 function checkAllImagesLoaded() {
-    imagesLoaded = backgroundLoaded && platformLoaded && cattyLoaded;
+    imagesLoaded = backgroundLoaded && platformLoaded;
     console.log("Images loaded:", imagesLoaded);
 }
 
 // Set the source after setting up event handlers
 backgroundImage.src = 'assets/background.jpeg';
 platformImage.src = 'assets/platform.jpeg';
-cattyImage.src = 'assets/catty.gif';
 // let catImage = new Image(); catImage.src = 'assets/cat.png';
 
 // --- Level Data ---
