@@ -38,12 +38,14 @@ const keys = {
 let backgroundImage = new Image(); 
 let platformImage = new Image();
 let goalImage = new Image();
+let doorImage = new Image();
 let imagesLoaded = false;
 
 // Track loading of images
 let backgroundLoaded = false;
 let platformLoaded = false;
 let goalLoaded = false;
+let doorLoaded = false;
 
 backgroundImage.onload = function() {
     backgroundLoaded = true;
@@ -57,6 +59,10 @@ goalImage.onload = function() {
     goalLoaded = true;
     checkAllImagesLoaded();
 };
+doorImage.onload = function() {
+    doorLoaded = true;
+    checkAllImagesLoaded();
+};
 backgroundImage.onerror = function() {
     console.error("Error loading background image");
 };
@@ -66,9 +72,12 @@ platformImage.onerror = function() {
 goalImage.onerror = function() {
     console.error("Error loading goal image");
 };
+doorImage.onerror = function() {
+    console.error("Error loading door image");
+};
 
 function checkAllImagesLoaded() {
-    imagesLoaded = backgroundLoaded && platformLoaded && goalLoaded;
+    imagesLoaded = backgroundLoaded && platformLoaded && goalLoaded && doorLoaded;
     console.log("Images loaded:", imagesLoaded);
 }
 
@@ -76,12 +85,14 @@ function checkAllImagesLoaded() {
 backgroundImage.src = 'assets/background.jpeg';
 platformImage.src = 'assets/platform.jpeg';
 goalImage.src = 'assets/goal.png';
+doorImage.src = 'assets/door.png';
 // let catImage = new Image(); catImage.src = 'assets/cat.png';
 
 // --- Level Data ---
 let currentLevelIndex = 0;
 let platforms = [];
 let collectibles = [];
+let door = null;
 
 const levels = [
     // Level 1
@@ -91,12 +102,29 @@ const levels = [
         { x: 400, y: canvas.height - 180, width: 120, height: 20, color: '#27ae60' },
         { x: 600, y: canvas.height - 280, width: 100, height: 20, color: '#27ae60' }
     ],
-    // Level 2 (Example - add more later)
+    // Level 2
     [
         { x: 0, y: canvas.height - 20, width: 150, height: 20, color: '#2ecc71' }, // Ground start
         { x: 250, y: canvas.height - 80, width: 100, height: 20, color: '#27ae60' },
         { x: 450, y: canvas.height - 160, width: 100, height: 20, color: '#27ae60' },
         { x: 650, y: canvas.height - 240, width: 150, height: 20, color: '#2ecc71' } // Ground end
+    ],
+    // Level 3 (New)
+    [
+        { x: 0, y: canvas.height - 20, width: 100, height: 20, color: '#2ecc71' }, // Ground start
+        { x: 200, y: canvas.height - 100, width: 80, height: 20, color: '#27ae60' },
+        { x: 350, y: canvas.height - 180, width: 80, height: 20, color: '#27ae60' },
+        { x: 500, y: canvas.height - 260, width: 80, height: 20, color: '#27ae60' },
+        { x: 650, y: canvas.height - 340, width: 150, height: 20, color: '#2ecc71' } // Highest platform
+    ],
+    // Level 4 (New)
+    [
+        { x: 0, y: canvas.height - 20, width: 120, height: 20, color: '#2ecc71' }, // Ground start
+        { x: 180, y: canvas.height - 90, width: 60, height: 20, color: '#27ae60' },
+        { x: 300, y: canvas.height - 160, width: 60, height: 20, color: '#27ae60' },
+        { x: 420, y: canvas.height - 230, width: 60, height: 20, color: '#27ae60' },
+        { x: 540, y: canvas.height - 300, width: 60, height: 20, color: '#27ae60' },
+        { x: 660, y: canvas.height - 370, width: 120, height: 20, color: '#2ecc71' } // Highest platform
     ]
 ];
 
@@ -108,8 +136,24 @@ const levelCollectibles = [
         { x: 450, y: canvas.height - 230, width: 32, height: 32, collected: false, floatY: 0, opacity: 1, floatOffset: 1 },
         { x: 650, y: canvas.height - 330, width: 32, height: 32, collected: false, floatY: 0, opacity: 1, floatOffset: 2 }
     ],
-    // Level 2 collectibles (add when needed)
-    []
+    // Level 2 collectibles
+    [
+        { x: 50, y: canvas.height - 70, width: 32, height: 32, collected: false, floatY: 0, opacity: 1, floatOffset: 0 },
+        { x: 300, y: canvas.height - 130, width: 32, height: 32, collected: false, floatY: 0, opacity: 1, floatOffset: 1 },
+        { x: 700, y: canvas.height - 290, width: 32, height: 32, collected: false, floatY: 0, opacity: 1, floatOffset: 2 }
+    ],
+    // Level 3 collectibles
+    [
+        { x: 50, y: canvas.height - 70, width: 32, height: 32, collected: false, floatY: 0, opacity: 1, floatOffset: 0 },
+        { x: 230, y: canvas.height - 150, width: 32, height: 32, collected: false, floatY: 0, opacity: 1, floatOffset: 1 },
+        { x: 700, y: canvas.height - 390, width: 32, height: 32, collected: false, floatY: 0, opacity: 1, floatOffset: 2 }
+    ],
+    // Level 4 collectibles
+    [
+        { x: 50, y: canvas.height - 70, width: 32, height: 32, collected: false, floatY: 0, opacity: 1, floatOffset: 0 },
+        { x: 330, y: canvas.height - 210, width: 32, height: 32, collected: false, floatY: 0, opacity: 1, floatOffset: 1 },
+        { x: 700, y: canvas.height - 420, width: 32, height: 32, collected: false, floatY: 0, opacity: 1, floatOffset: 2 }
+    ]
 ];
 
 function loadLevel(levelIndex) {
@@ -124,6 +168,22 @@ function loadLevel(levelIndex) {
         playerVelX = 0;
         playerVelY = 0;
         isOnGround = false;
+        
+        // Add door to the highest platform
+        let highestPlatform = platforms[0];
+        for (const platform of platforms) {
+            if (platform.y < highestPlatform.y) {
+                highestPlatform = platform;
+            }
+        }
+        
+        // Place door at the right edge of the highest platform
+        door = {
+            x: highestPlatform.x + highestPlatform.width - 40,
+            y: highestPlatform.y - 50, // Place door on top of platform
+            width: 40,
+            height: 50
+        };
     } else {
         console.error("Invalid level index:", levelIndex);
         // Handle end of game or error
@@ -256,6 +316,27 @@ function update() {
         }
     });
 
+    // Door collision detection (transition to next level)
+    if (door && collectiblesCount === totalCollectibles) {
+        if (
+            playerX < door.x + door.width &&
+            playerX + playerWidth > door.x &&
+            playerY < door.y + door.height &&
+            playerY + playerHeight > door.y
+        ) {
+            // Go to next level
+            if (currentLevelIndex < levels.length - 1) {
+                currentLevelIndex++;
+                loadLevel(currentLevelIndex);
+            } else {
+                // Game completed, could show a victory screen
+                alert("Congratulations! You've completed all levels!");
+                currentLevelIndex = 0; // Restart the game
+                loadLevel(currentLevelIndex);
+            }
+        }
+    }
+
     // --- Safety check for falling through the world ---
     // If player falls below the canvas height, reset to ground level
     if (playerY > canvas.height) {
@@ -288,9 +369,26 @@ function draw() {
     if (backgroundLoaded) {
         ctx.drawImage(backgroundImage, 0, 0, canvas.width, canvas.height);
     } else {
-        // Fallback to a color
-        ctx.fillStyle = '#87CEEB'; // Sky blue
+        // Create a nicer gradient background
+        const gradient = ctx.createLinearGradient(0, 0, 0, canvas.height);
+        gradient.addColorStop(0, '#87CEEB');   // Sky blue at top
+        gradient.addColorStop(1, '#1E90FF');   // Darker blue at bottom
+        ctx.fillStyle = gradient;
         ctx.fillRect(0, 0, canvas.width, canvas.height);
+        
+        // Add some clouds
+        ctx.fillStyle = 'rgba(255, 255, 255, 0.7)';
+        ctx.beginPath();
+        ctx.arc(100, 80, 30, 0, Math.PI * 2);
+        ctx.arc(130, 90, 25, 0, Math.PI * 2);
+        ctx.arc(160, 80, 20, 0, Math.PI * 2);
+        ctx.fill();
+        
+        ctx.beginPath();
+        ctx.arc(500, 120, 35, 0, Math.PI * 2);
+        ctx.arc(540, 130, 30, 0, Math.PI * 2);
+        ctx.arc(580, 120, 25, 0, Math.PI * 2);
+        ctx.fill();
     }
 
     // Draw platforms
@@ -299,9 +397,24 @@ function draw() {
             // Draw platform with the platform image
             ctx.drawImage(platformImage, platform.x, platform.y, platform.width, platform.height);
         } else {
-            // Fallback to the original colored rectangles
-            ctx.fillStyle = platform.color || '#95a5a6';
+            // Enhanced fallback with gradient and texture
+            const gradient = ctx.createLinearGradient(platform.x, platform.y, platform.x, platform.y + platform.height);
+            gradient.addColorStop(0, '#3FA03F');  // Green-brown at top
+            gradient.addColorStop(1, '#2D7D2D');  // Darker at bottom
+            ctx.fillStyle = gradient;
             ctx.fillRect(platform.x, platform.y, platform.width, platform.height);
+            
+            // Add a top grass highlight
+            ctx.fillStyle = '#5AC75A';
+            ctx.fillRect(platform.x, platform.y, platform.width, 3);
+            
+            // Add a subtle texture pattern
+            ctx.fillStyle = 'rgba(0, 0, 0, 0.1)';
+            for (let i = 0; i < platform.width; i += 8) {
+                if (i % 16 === 0) {
+                    ctx.fillRect(platform.x + i, platform.y + 3, 4, 2);
+                }
+            }
         }
     }
 
@@ -321,14 +434,146 @@ function draw() {
             // Reset opacity for other elements
             ctx.globalAlpha = 1.0;
         } else {
-            // Fallback if image not loaded
-            ctx.fillStyle = collectible.collected ? 'rgba(255, 215, 0, ' + collectible.opacity + ')' : 'gold';
+            // Enhanced fallback if image not loaded
             const drawY = collectible.collected 
                 ? collectible.y - collectible.floatY 
                 : collectible.y + collectible.floatY;
-            ctx.fillRect(collectible.x, drawY, collectible.width, collectible.height);
+            
+            if (collectible.collected) {
+                // Collected star/coin with fade-out effect
+                ctx.globalAlpha = collectible.opacity;
+                
+                // Draw a star shape
+                const centerX = collectible.x + collectible.width / 2;
+                const centerY = drawY + collectible.height / 2;
+                const spikes = 5;
+                const outerRadius = collectible.width / 2;
+                const innerRadius = collectible.width / 4;
+                
+                ctx.fillStyle = '#FFD700'; // Gold
+                ctx.beginPath();
+                for (let i = 0; i < spikes * 2; i++) {
+                    const radius = i % 2 === 0 ? outerRadius : innerRadius;
+                    const angle = Math.PI * i / spikes - Math.PI / 2;
+                    if (i === 0) {
+                        ctx.moveTo(centerX + radius * Math.cos(angle), centerY + radius * Math.sin(angle));
+                    } else {
+                        ctx.lineTo(centerX + radius * Math.cos(angle), centerY + radius * Math.sin(angle));
+                    }
+                }
+                ctx.closePath();
+                ctx.fill();
+                
+                // Add glow
+                ctx.shadowColor = '#FFD700';
+                ctx.shadowBlur = 10;
+                ctx.fill();
+                ctx.shadowBlur = 0;
+                
+                ctx.globalAlpha = 1.0;
+            } else {
+                // Not collected - animated coin/star
+                // Draw a shiny coin
+                const centerX = collectible.x + collectible.width / 2;
+                const centerY = drawY + collectible.height / 2;
+                const radius = collectible.width / 2 - 2;
+                
+                // Coin body
+                ctx.fillStyle = '#FFD700'; // Gold
+                ctx.beginPath();
+                ctx.arc(centerX, centerY, radius, 0, Math.PI * 2);
+                ctx.fill();
+                
+                // Highlight
+                ctx.fillStyle = '#FFF8DC'; // Light gold/cream
+                ctx.globalAlpha = 0.3 + 0.2 * Math.sin(collectible.floatOffset * 2);
+                ctx.beginPath();
+                ctx.arc(centerX - radius/3, centerY - radius/3, radius/2, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.globalAlpha = 1.0;
+                
+                // Add letter "C" for coin
+                ctx.fillStyle = '#8B4513'; // Brown
+                ctx.font = 'bold ' + (radius) + 'px Arial';
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+                ctx.fillText('★', centerX, centerY);
+            }
         }
     });
+
+    // Draw door on the highest platform if all collectibles are collected
+    if (door) {
+        if (doorLoaded) {
+            // Only show the door if all collectibles have been collected
+            if (collectiblesCount === totalCollectibles) {
+                ctx.drawImage(doorImage, door.x, door.y, door.width, door.height);
+                
+                // Add a glowing effect around the door
+                ctx.save();
+                ctx.globalAlpha = 0.5 + 0.3 * Math.sin(Date.now() / 200); // Pulsating glow
+                ctx.shadowColor = '#FFD700'; // Gold glow
+                ctx.shadowBlur = 15;
+                ctx.drawImage(doorImage, door.x, door.y, door.width, door.height);
+                ctx.restore();
+                
+                // Add an indicator to tell player to use the door
+                ctx.fillStyle = '#FFD700'; // Gold color
+                ctx.font = 'bold 18px "Press Start 2P", "VT323", "Pixelify Sans", monospace';
+                ctx.textAlign = 'center';
+                ctx.fillText('NEXT LEVEL →', door.x + door.width / 2, door.y - 10);
+            } else {
+                // Show a placeholder/inactive door
+                ctx.globalAlpha = 0.3; // Semi-transparent
+                ctx.drawImage(doorImage, door.x, door.y, door.width, door.height);
+                ctx.globalAlpha = 1.0;
+            }
+        } else {
+            // Fallback if image not loaded
+            if (collectiblesCount === totalCollectibles) {
+                // Draw a nicer door shape
+                // Door frame
+                ctx.fillStyle = '#8B4513'; // Brown for door frame
+                ctx.fillRect(door.x, door.y, door.width, door.height);
+                
+                // Door panel
+                ctx.fillStyle = '#A0522D'; // Lighter brown for door panel
+                ctx.fillRect(door.x + 5, door.y + 5, door.width - 10, door.height - 10);
+                
+                // Door knob
+                ctx.fillStyle = '#FFD700'; // Gold door knob
+                ctx.beginPath();
+                ctx.arc(door.x + door.width - 10, door.y + door.height / 2, 4, 0, Math.PI * 2);
+                ctx.fill();
+                
+                // Add a glowing border
+                ctx.strokeStyle = '#FFD700';
+                ctx.lineWidth = 3;
+                ctx.strokeRect(door.x, door.y, door.width, door.height);
+                
+                // Add pulsating effect
+                ctx.save();
+                ctx.globalAlpha = 0.3 + 0.2 * Math.sin(Date.now() / 200);
+                ctx.fillStyle = '#FFD700';
+                ctx.fillRect(door.x - 2, door.y - 2, door.width + 4, door.height + 4);
+                ctx.restore();
+            } else {
+                // Inactive door
+                ctx.fillStyle = 'rgba(139, 69, 19, 0.3)'; // Semi-transparent brown
+                ctx.fillRect(door.x, door.y, door.width, door.height);
+                
+                // Door panel with low opacity
+                ctx.fillStyle = 'rgba(160, 82, 45, 0.2)'; // Lighter brown with low opacity
+                ctx.fillRect(door.x + 5, door.y + 5, door.width - 10, door.height - 10);
+                
+                // Door knob with low opacity
+                ctx.fillStyle = 'rgba(218, 165, 32, 0.2)'; // Gold with low opacity
+                ctx.beginPath();
+                ctx.arc(door.x + door.width - 10, door.y + door.height / 2, 4, 0, Math.PI * 2);
+                ctx.fill();
+            }
+        }
+    }
 
     // Position and style the cat element instead of drawing on canvas
     cattyElement.style.left = playerX + 'px';
@@ -338,10 +583,19 @@ function draw() {
     cattyElement.style.transformOrigin = 'center';
     
     // Draw the counter in top right
-    ctx.fillStyle = '#FFFFFF';
-    ctx.font = 'bold 24px Arial';
+    ctx.fillStyle = '#FF8C00'; // Orange color
+    ctx.font = 'bold 36px "Press Start 2P", "VT323", "Pixelify Sans", monospace'; // Bigger game-style font
     ctx.textAlign = 'right';
-    ctx.fillText(`${collectiblesCount}/${totalCollectibles}`, canvas.width - 20, 30);
+    // Add a black outline for better visibility
+    ctx.strokeStyle = '#000000';
+    ctx.lineWidth = 4;
+    ctx.strokeText(`${collectiblesCount}/${totalCollectibles}`, canvas.width - 20, 40);
+    ctx.fillText(`${collectiblesCount}/${totalCollectibles}`, canvas.width - 20, 40);
+
+    // Draw level indicator
+    ctx.textAlign = 'left';
+    ctx.strokeText(`LEVEL ${currentLevelIndex + 1}`, 20, 40);
+    ctx.fillText(`LEVEL ${currentLevelIndex + 1}`, 20, 40);
 }
 
 function gameLoop(timestamp) {
