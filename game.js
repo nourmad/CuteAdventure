@@ -11,6 +11,10 @@ let playerHeight = 52;
 let playerColor = '#e74c3c'; // Red color for the player placeholder
 let playerDirection = 1; // 1 for right, -1 for left
 
+// Counter for collectibles
+let collectiblesCount = 0;
+const totalCollectibles = 3;
+
 // Physics variables
 let playerVelX = 0;
 let playerVelY = 0;
@@ -33,11 +37,13 @@ const keys = {
 // Load images
 let backgroundImage = new Image(); 
 let platformImage = new Image();
+let goalImage = new Image();
 let imagesLoaded = false;
 
 // Track loading of images
 let backgroundLoaded = false;
 let platformLoaded = false;
+let goalLoaded = false;
 
 backgroundImage.onload = function() {
     backgroundLoaded = true;
@@ -47,26 +53,36 @@ platformImage.onload = function() {
     platformLoaded = true;
     checkAllImagesLoaded();
 };
+goalImage.onload = function() {
+    goalLoaded = true;
+    checkAllImagesLoaded();
+};
 backgroundImage.onerror = function() {
     console.error("Error loading background image");
 };
 platformImage.onerror = function() {
     console.error("Error loading platform image");
 };
+goalImage.onerror = function() {
+    console.error("Error loading goal image");
+};
 
 function checkAllImagesLoaded() {
-    imagesLoaded = backgroundLoaded && platformLoaded;
+    imagesLoaded = backgroundLoaded && platformLoaded && goalLoaded;
     console.log("Images loaded:", imagesLoaded);
 }
 
 // Set the source after setting up event handlers
 backgroundImage.src = 'assets/background.jpeg';
 platformImage.src = 'assets/platform.jpeg';
+goalImage.src = 'assets/goal.png';
 // let catImage = new Image(); catImage.src = 'assets/cat.png';
 
 // --- Level Data ---
 let currentLevelIndex = 0;
 let platforms = [];
+let collectibles = [];
+
 const levels = [
     // Level 1
     [
@@ -84,9 +100,24 @@ const levels = [
     ]
 ];
 
+// Define collectible positions for each level
+const levelCollectibles = [
+    // Level 1 collectibles
+    [
+        { x: 200, y: canvas.height - 150, width: 32, height: 32, collected: false, floatY: 0, opacity: 1, floatOffset: 0 },
+        { x: 450, y: canvas.height - 230, width: 32, height: 32, collected: false, floatY: 0, opacity: 1, floatOffset: 1 },
+        { x: 650, y: canvas.height - 330, width: 32, height: 32, collected: false, floatY: 0, opacity: 1, floatOffset: 2 }
+    ],
+    // Level 2 collectibles (add when needed)
+    []
+];
+
 function loadLevel(levelIndex) {
     if (levelIndex >= 0 && levelIndex < levels.length) {
         platforms = levels[levelIndex];
+        collectibles = JSON.parse(JSON.stringify(levelCollectibles[levelIndex])); // Deep copy
+        collectiblesCount = 0; // Reset counter when loading a new level
+        
         // Reset player position for the new level
         playerX = 50;
         playerY = canvas.height - 100;
@@ -184,6 +215,8 @@ function update() {
         }
         
         // Check for hitting platform from below (bonking head)
+        // We're removing the collision response to allow climbing through platforms from below
+        // Only keep the detection without stopping the player
         if (
             playerVelY < 0 && // Moving upward
             playerY <= platform.y + platform.height && // Player's top is above platform bottom
@@ -191,10 +224,37 @@ function update() {
             playerX + playerWidth > platform.x + 2 && // Horizontal overlap with small buffer
             playerX < platform.x + platform.width - 2 // Horizontal overlap with small buffer
         ) {
-            playerY = platform.y + platform.height; // Place player at bottom of platform
-            playerVelY = 0; // Stop upward movement
+            // No longer stopping the player - they can pass through
+            // playerY = platform.y + platform.height; // Removed
+            // playerVelY = 0; // Removed
         }
     }
+
+    // --- Collectible collision detection and animation ---
+    collectibles.forEach((collectible, index) => {
+        // Only check collision if not already collected
+        if (!collectible.collected) {
+            // Simple rectangle collision detection
+            if (
+                playerX < collectible.x + collectible.width &&
+                playerX + playerWidth > collectible.x &&
+                playerY < collectible.y + collectible.height &&
+                playerY + playerHeight > collectible.y
+            ) {
+                // Mark as collected and increment counter
+                collectible.collected = true;
+                collectiblesCount++;
+            }
+            
+            // Animate non-collected items (gentle float up and down)
+            collectible.floatOffset += 0.05; // Increment the offset for the sine wave
+            collectible.floatY = Math.sin(collectible.floatOffset) * 5; // Sine wave with amplitude of 5px
+        } else {
+            // Animate collected items (float up and fade out)
+            collectible.floatY += 1; // Move upward
+            collectible.opacity = Math.max(0, collectible.opacity - 0.02); // Fade out
+        }
+    });
 
     // --- Safety check for falling through the world ---
     // If player falls below the canvas height, reset to ground level
@@ -245,12 +305,43 @@ function draw() {
         }
     }
 
+    // Draw collectibles
+    collectibles.forEach(collectible => {
+        if (goalLoaded) {
+            // Apply opacity
+            ctx.globalAlpha = collectible.opacity;
+            
+            // Draw at the adjusted position
+            const drawY = collectible.collected 
+                ? collectible.y - collectible.floatY  // Float away if collected
+                : collectible.y + collectible.floatY; // Float up and down if not collected
+            
+            ctx.drawImage(goalImage, collectible.x, drawY, collectible.width, collectible.height);
+            
+            // Reset opacity for other elements
+            ctx.globalAlpha = 1.0;
+        } else {
+            // Fallback if image not loaded
+            ctx.fillStyle = collectible.collected ? 'rgba(255, 215, 0, ' + collectible.opacity + ')' : 'gold';
+            const drawY = collectible.collected 
+                ? collectible.y - collectible.floatY 
+                : collectible.y + collectible.floatY;
+            ctx.fillRect(collectible.x, drawY, collectible.width, collectible.height);
+        }
+    });
+
     // Position and style the cat element instead of drawing on canvas
     cattyElement.style.left = playerX + 'px';
     cattyElement.style.top = playerY + 'px';
     cattyElement.style.transform = playerDirection === 1 ? 'scaleX(-1)' : 'scaleX(1)';
     // Adjust the transform origin to center of cat
     cattyElement.style.transformOrigin = 'center';
+    
+    // Draw the counter in top right
+    ctx.fillStyle = '#FFFFFF';
+    ctx.font = 'bold 24px Arial';
+    ctx.textAlign = 'right';
+    ctx.fillText(`${collectiblesCount}/${totalCollectibles}`, canvas.width - 20, 30);
 }
 
 function gameLoop(timestamp) {
