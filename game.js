@@ -55,8 +55,8 @@ function checkAllImagesLoaded() {
 }
 
 // Set the source after setting up event handlers
-backgroundImage.src = 'background.jpeg';
-platformImage.src = 'platform.jpeg';
+backgroundImage.src = 'assets/background.jpeg';
+platformImage.src = 'assets/platform.jpeg';
 // let catImage = new Image(); catImage.src = 'assets/cat.png';
 
 // --- Level Data ---
