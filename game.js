@@ -1,13 +1,15 @@
 // Get the canvas and context
 const canvas = document.getElementById('gameCanvas');
 const ctx = canvas.getContext('2d');
+const cattyElement = document.getElementById('catty');
 
 // Game variables (example)
 let playerX = 50;
 let playerY = canvas.height - 100; // Start near the bottom
-let playerWidth = 30;
-let playerHeight = 30;
+let playerWidth = 40;
+let playerHeight = 40;
 let playerColor = '#e74c3c'; // Red color for the player placeholder
+let playerDirection = 1; // 1 for right, -1 for left
 
 // Physics variables
 let playerVelX = 0;
@@ -16,6 +18,9 @@ const gravity = 0.5;
 const jumpStrength = -12; // Negative value for upward force
 const moveSpeed = 5;
 let isOnGround = false;
+
+// Animation variables 
+let lastTimestamp = 0;
 
 // Keyboard input state
 const keys = {
@@ -28,11 +33,14 @@ const keys = {
 // Load images
 let backgroundImage = new Image(); 
 let platformImage = new Image();
+// Use the preloaded GIF from the hidden div
+let cattyImage = document.getElementById('catty');
 let imagesLoaded = false;
 
 // Track loading of images
 let backgroundLoaded = false;
 let platformLoaded = false;
+let cattyLoaded = true; // We assume the GIF is loaded since it's in the HTML
 
 backgroundImage.onload = function() {
     backgroundLoaded = true;
@@ -50,13 +58,14 @@ platformImage.onerror = function() {
 };
 
 function checkAllImagesLoaded() {
-    imagesLoaded = backgroundLoaded && platformLoaded;
+    imagesLoaded = backgroundLoaded && platformLoaded && cattyLoaded;
     console.log("Images loaded:", imagesLoaded);
 }
 
 // Set the source after setting up event handlers
 backgroundImage.src = 'assets/background.jpeg';
 platformImage.src = 'assets/platform.jpeg';
+cattyImage.src = 'assets/catty.gif';
 // let catImage = new Image(); catImage.src = 'assets/cat.png';
 
 // --- Level Data ---
@@ -123,9 +132,11 @@ function update() {
     playerVelX = 0; // Reset horizontal velocity each frame unless a key is pressed
     if (keys.left) {
         playerVelX = -moveSpeed;
+        playerDirection = -1;
     }
     if (keys.right) {
         playerVelX = moveSpeed;
+        playerDirection = 1;
     }
 
     // Apply horizontal velocity
@@ -238,14 +249,18 @@ function draw() {
         }
     }
 
-    // Draw the player
-    // TODO: Replace fillRect with drawImage for the player
-    // ctx.drawImage(catImage, playerX, playerY, playerWidth, playerHeight);
-    ctx.fillStyle = playerColor;
-    ctx.fillRect(playerX, playerY, playerWidth, playerHeight);
+    // Position and style the cat element instead of drawing on canvas
+    cattyElement.style.left = playerX + 'px';
+    cattyElement.style.top = playerY + 'px';
+    cattyElement.style.transform = playerDirection === -1 ? 'scaleX(-1)' : 'scaleX(1)';
 }
 
-function gameLoop() {
+function gameLoop(timestamp) {
+    // Calculate time elapsed since last frame for animation
+    if (!lastTimestamp) lastTimestamp = timestamp;
+    const deltaTime = timestamp - lastTimestamp;
+    lastTimestamp = timestamp;
+    
     update(); // Update game state
     draw();   // Draw the game
 
